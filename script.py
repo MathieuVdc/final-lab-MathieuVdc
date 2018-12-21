@@ -335,7 +335,7 @@ def main():
     plt.show()
 
     # Split Data et Fabrication des Sets
-    print('\nSPlit Data et Fabrication des Sets :')
+    print('\nSplit Data et Fabrication des Sets :')
     datasets = organize_and_split_data(csv_path)
     X_train = datasets[0]
     X_val = datasets[1]

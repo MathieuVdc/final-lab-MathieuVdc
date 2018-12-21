@@ -249,3 +249,70 @@ def Grid_Search_CV_MLP(X_train, y_train, nb_crossval=3):
     print("\nMeilleur score: %0.3f" % gs_cv.best_score_)
     
     return best_parameters
+
+def main():
+    # Chargement des données
+    csv_path = 'data/Tobacco3482.csv'
+    data = pd.read_csv(csv_path, sep = ",")
+    
+    # Statistiques
+    print('Quelques Statistiques :')
+    data.describe(include='all')
+    print('\nSamples :')
+    data.sample(10)
+    repartition_numbers = data['label'].value_counts()
+    print('\nRépartition :')
+    print(repartition_numbers)
+    repartition_numbers.plot.bar(title = 'Répartition des documents par label')
+    dictionnary_word_average_number = count_average_number_of_words_per_class('data/Tobacco3482-OCR/')
+    plt.figure(figsize=(12,4))
+    plt.bar(range(len(dictionnary_word_average_number)), list(dictionnary_word_average_number.values()), align='center')
+    plt.xticks(range(len(dictionnary_word_average_number)), list(dictionnary_word_average_number.keys()))
+    plt.show()
+    
+    # Split Data et Fabrication des Sets
+    print('\nSPlit Data et Fabrication des Sets :')
+    datasets = organize_and_split_data(csv_path)
+    X_train = datasets[0]
+    X_val = datasets[1]
+    X_test = datasets[2]
+    X_trainval = datasets[3]
+    y_train = datasets[4]
+    y_val = datasets[5]
+    y_test = datasets[6]
+    y_trainval = datasets[7]
+    
+    # MultinomialNB - TF-IDF - Optimisé
+    print('\n MultinomialNB - TF-IDF - Optimisé :\n')
+    datasets_tokenized_idf = tokenizing_and_tfidf(X_trainval, X_test, 1000, 0.8)
+    X_trainval_tf = datasets_tokenized_idf[0]
+    X_test_tf = datasets_tokenized_idf[1]
+    final_MulNB = my_MultinomialNB(X_trainval_tf, X_test_tf, y_trainval, y_test,0.2)
+    print('')
+    
+    # MultinomialNB - BoW - Optimisé
+    print('\n MultinomialNB - BoW - Optimisé :\n')
+    datasets_tokenized_bow = tokenizing(X_trainval, X_test,2000,0.75)
+    X_trainval_cv = datasets_tokenized_bow[0]
+    X_test_cv = datasets_tokenized_bow[1]
+    final_MulNB_bow = my_MultinomialNB(X_trainval_cv, X_test_cv, y_trainval, y_test, 0.05)
+    print('')
+    
+    # MLP - TF-IDF - Optimisé 
+    print('\n MLP - TF-IDF - Optimisé :\n')
+    datasets_tokenized_idf = tokenizing_and_tfidf(X_trainval, X_test, 2000, 0.80)
+    X_trainval_tf = datasets_tokenized_idf[0]
+    X_test_tf = datasets_tokenized_idf[1]
+    final_mlp_tfidf = my_MLP(X_trainval_tf, X_test_tf, y_trainval, y_test, 0.0001, 'logistic',100 ,True, True, 50)
+    print('')
+   
+    # MLP - BoW - Optimisé
+    print('\n MLP - BoW - Optimisé :\n')
+    datasets_tokenized_bow = tokenizing(X_trainval, X_test,2000,0.75)
+    X_trainval_cv = datasets_tokenized_bow[0]
+    X_test_cv = datasets_tokenized_bow[1]
+    final_mlp_bow = my_MLP(X_trainval_cv, X_test_cv, y_trainval, y_test, 0.0001, 'relu',100 ,True, True, 200)
+
+    
+if __name__ == '__main__':
+    main()

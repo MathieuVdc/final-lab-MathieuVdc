@@ -67,7 +67,7 @@ def __data_organizing(input_csv_path):
         x.append(
             __get_text_cleaned(
                 os.path.join(
-                    'tobacco-lab/data/Tobacco3482-OCR/' +
+                    'data/Tobacco3482-OCR/' +
                     ocr_path)))
         y.append(row['label'])
     labelencod = preprocessing.LabelEncoder()

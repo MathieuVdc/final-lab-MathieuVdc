@@ -90,7 +90,7 @@ def organize_and_split_data(input_csv_path):
 
 
 
-def __tokenizing(set_to_fit , sets_to_transform, max_feat = None, mdf=1.0):
+def tokenizing(set_to_fit , sets_to_transform, max_feat = None, mdf=1.0):
     
     print("Tokenization...")
     vectorizer = CountVectorizer(max_features=max_feat, max_df = mdf)
@@ -132,7 +132,7 @@ def __tfidf(set_cv_to_fit, sets_cv_to_transform):
 
 def tokenizing_and_tfidf(set_to_fit, sets_to_transform, max_feat = None, mdf = 1.0):
     
-    cv = __tokenizing(set_to_fit, sets_to_transform, max_feat, mdf)
+    cv = tokenizing(set_to_fit, sets_to_transform, max_feat, mdf)
     nbr_sets = len(cv)
     if (nbr_sets != 2) :
         return __tfidf(cv[0], cv[1:nbr_sets])
@@ -162,15 +162,20 @@ def my_MultinomialNB(X_train, X_test, y_train, y_test, a = 1.0, cross_val = 5):
     return [clf, a, cross_validation_score, score]
 
 
-def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3):    
+def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf = True):    
 
-    #logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-
-    pipeline_gscv = Pipeline([
-    ('vector', CountVectorizer()),
-    ('tfidf', TfidfTransformer()),
-    ('clf', MultinomialNB()),
-    ])
+    if (tfidf == True) :
+        pipeline_gscv = Pipeline([
+        ('vector', CountVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultinomialNB()),
+        ])
+        
+    else :
+        pipeline_gscv = Pipeline([
+        ('vector', CountVectorizer()),
+        ('clf', MultinomialNB()),
+        ])
 
     parametres = {
     'vector__max_df': (0.1, 0.2, 0.5, 0.7, 0.75, 0.8),

@@ -13,8 +13,13 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import cross_val_score
+import logging
+from pprint import pprint
 import warnings
 warnings.filterwarnings("ignore")
+from sklearn.model_selection import GridSearchCV, PredefinedSplit
+from sklearn.pipeline import Pipeline
+
 
 
 
@@ -67,13 +72,14 @@ def __data_splitting(x,y):
     
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size = 0.4, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size = 0.5, random_state=42)
-    print("taille de X_train : "+str(len(X_train)))
-    print("taille de X_val : "+str(len(X_val)))
-    print("taille de X_test : "+str(len(X_test)))
-    print("taille de y_train : "+str(len(y_train)))
-    print("taille de y_val : "+str(len(y_val)))
-    print("taille de y_test : "+str(len(y_test)))
-    return [X_train, X_val, X_test, y_train, y_val, y_test]
+    X_trainval = X_train + X_val
+    y_trainval = y_train + y_val
+    print("Fabriqué 4 jeux de données depuis les données : X_train, X_val, X_test, X_trainval (X_train+X_val) ")
+    print("taille de train : "+str(len(X_train)))
+    print("taille de val : "+str(len(X_val)))
+    print("taille de trainval : "+str(len(X_trainval)))
+    print("taille de test : "+str(len(X_test)))
+    return [X_train, X_val, X_test, X_trainval, y_train, y_val, y_test, y_trainval]
 
 
 def organize_and_split_data(input_csv_path):
@@ -84,45 +90,64 @@ def organize_and_split_data(input_csv_path):
 
 
 
-def __tokenizing(X_train, X_val, X_test, max_feat = None):
+def __tokenizing(set_to_fit , sets_to_transform, max_feat = None, mdf=1.0):
     
     print("Tokenization...")
-    vectorizer = CountVectorizer(max_features=max_feat)
-    vectorizer.fit(X_train)
-    X_train_cv = vectorizer.transform(X_train)
-    X_val_cv = vectorizer.transform(X_val)
-    X_test_cv = vectorizer.transform(X_test)
-    print("Terminé !")
+    vectorizer = CountVectorizer(max_features=max_feat, max_df = mdf)
+    vectorizer.fit(set_to_fit)
+    sets_cv = []
+    sets_cv.append(vectorizer.transform(set_to_fit))
+    
+    if (isinstance(sets_to_transform[0],list)):
+        for dataset in sets_to_transform :
+            sets_cv.append(vectorizer.transform(dataset))
+    else :
+        sets_cv.append(vectorizer.transform(sets_to_transform))
+               
+    print("Terminé !\n")
     print("Taille du vocabulaire :")
     print(str(len(vectorizer.get_feature_names())))
-    return [X_train_cv, X_val_cv, X_test_cv]
+    print('')
+    print('Nombre de sets retournés : '+str(len(sets_cv)))
+    return sets_cv
 
 
-def __tfidf(X_train_cv, X_val_cv, X_test_cv):
+def __tfidf(set_cv_to_fit, sets_cv_to_transform):
     
     print("TFIDF...")
-    tf_transformer = TfidfTransformer().fit(X_train_cv)
-    X_train_tf = tf_transformer.transform(X_train_cv)
-    X_val_tf = tf_transformer.transform(X_val_cv)
-    X_test_tf = tf_transformer.transform(X_test_cv)
-    print("Terminé !")
-    return [X_train_tf, X_val_tf, X_test_tf]
-
-
-def tokenizing_and_tfidf(X_train, X_val, X_test, max_feat = None):
+    tf_transformer = TfidfTransformer().fit(set_cv_to_fit)
+    sets_tf = []
+    sets_tf.append(tf_transformer.transform(set_cv_to_fit))
     
-    cv = __tokenizing(X_train, X_val, X_test, max_feat)
-    return __tfidf(cv[0], cv[1], cv[2])
+    if (isinstance(sets_cv_to_transform[0],list)):
+        for dataset in sets_cv_to_transform :
+            sets_tf.append(tf_transformer.transform(dataset))
+    else:
+        sets_tf.append(tf_transformer.transform(sets_cv_to_transform))       
+        
+    print("Terminé !")
+    print('Nombre de sets retournés : '+str(len(sets_tf)))
+    return sets_tf
+
+
+def tokenizing_and_tfidf(set_to_fit, sets_to_transform, max_feat = None, mdf = 1.0):
+    
+    cv = __tokenizing(set_to_fit, sets_to_transform, max_feat, mdf)
+    nbr_sets = len(cv)
+    if (nbr_sets != 2) :
+        return __tfidf(cv[0], cv[1:nbr_sets])
+    else :
+        return __tfidf(cv[0], cv[1])
  
     
-def my_MultinomialNB(X_train, X_val, X_test, y_train, y_val, y_test, a = 1.0, cross_val = 5):
+def my_MultinomialNB(X_train, X_test, y_train, y_test, a = 1.0, cross_val = 5):
     
     clf = MultinomialNB(alpha=a)
     print("Entraînement...")
     clf.fit(X_train,y_train)
-    print("Terminé !")
+    print("Terminé !\n")
     print("Evaluation par Cross-Validation ("+str(cross_val)+") avec alpha = "+str(a)+" :")
-    cross_validation_score = np.mean(cross_val_score(clf, X_val, y_val, cv=cross_val))
+    cross_validation_score = np.mean(cross_val_score(clf, X_train, y_train, cv=cross_val))
     print(cross_validation_score)
     print("Précision/Score sur les données de Test : ")
     score = clf.score(X_test,y_test)
@@ -137,17 +162,41 @@ def my_MultinomialNB(X_train, X_val, X_test, y_train, y_val, y_test, a = 1.0, cr
     return [clf, a, cross_validation_score, score]
 
 
-def my_MultinomialNB_mute(X_train, X_val, X_test, y_train, y_val, y_test, a = 1.0, cross_val = 5):
-    
-    clf = MultinomialNB(alpha=a)
-    clf.fit(X_train,y_train)
-    cross_validation_score = np.mean(cross_val_score(clf, X_val, y_val, cv=cross_val))
-    score = clf.score(X_test,y_test)
-    y_pred = clf.predict(X_test)
-    return [clf, a, cross_validation_score, score]
+def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3):    
 
-    
+    #logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
+    pipeline_gscv = Pipeline([
+    ('vector', CountVectorizer()),
+    ('tfidf', TfidfTransformer()),
+    ('clf', MultinomialNB()),
+    ])
+
+    parametres = {
+    'vector__max_df': (0.1, 0.2, 0.5, 0.7, 0.75, 0.8),
+    'vector__max_features' : (500, 1000, 1500, 2000),
+    'clf__alpha': (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0)
+    }
+    
+    gs_cv = GridSearchCV(pipeline_gscv, parametres, verbose=1, n_jobs=-1,  cv=nb_crossval)
+
+    print("Grid Search MultinomialNB en cours...")
+    print("Pipeline à suivre :", [name for name, _ in pipeline_gscv.steps])
+    print("Paramètres à tester:")
+    pprint(parametres)
+    gs_cv.fit(X_train, y_train)
+    
+    print("Terminé !")
+    print('')
+
+    print("Meilleurs paramètres : ")
+    best_parameters = gs_cv.best_estimator_.get_params()
+    
+    for param_name in sorted(parametres.keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    print("\nMeilleur score: %0.3f" % gs_cv.best_score_)
+    
+    return best_parameters
 
             
     

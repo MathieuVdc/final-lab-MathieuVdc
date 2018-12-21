@@ -84,10 +84,10 @@ def organize_and_split_data(input_csv_path):
 
 
 
-def __tokenizing(X_train, X_val, X_test):
+def __tokenizing(X_train, X_val, X_test, max_feat = None):
     
     print("Tokenization...")
-    vectorizer = CountVectorizer()
+    vectorizer = CountVectorizer(max_features=max_feat)
     vectorizer.fit(X_train)
     X_train_cv = vectorizer.transform(X_train)
     X_val_cv = vectorizer.transform(X_val)
@@ -109,9 +109,9 @@ def __tfidf(X_train_cv, X_val_cv, X_test_cv):
     return [X_train_tf, X_val_tf, X_test_tf]
 
 
-def tokenizing_and_tfidf(X_train, X_val, X_test):
+def tokenizing_and_tfidf(X_train, X_val, X_test, max_feat = None):
     
-    cv = __tokenizing(X_train, X_val, X_test)
+    cv = __tokenizing(X_train, X_val, X_test, max_feat)
     return __tfidf(cv[0], cv[1], cv[2])
  
     

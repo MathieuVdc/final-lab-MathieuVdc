@@ -22,9 +22,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPClassifier
 
 
-
-
-
 def __count_words_in_a_file(file_path):
     
     file = open(file_path, "r", encoding="utf-8")
@@ -151,6 +148,7 @@ def my_MultinomialNB(X_train, X_test, y_train, y_test, a = 1.0, cross_val = 5):
     print("Evaluation par Cross-Validation ("+str(cross_val)+") avec alpha = "+str(a)+" :")
     cross_validation_score = np.mean(cross_val_score(clf, X_train, y_train, cv=cross_val))
     print(cross_validation_score)
+    print('')
     print("Précision/Score sur les données de Test : ")
     score = clf.score(X_test,y_test)
     print(score)  
@@ -180,7 +178,7 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf = True):
         ])
 
     parametres = {
-    'vector__max_df': (0.1, 0.2, 0.5, 0.7, 0.75, 0.8),
+    'vector__max_df': (0.5, 0.7, 0.75, 0.8),
     'vector__max_features' : (1000, 1500, 2000),
     'clf__alpha': (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0)
     }
@@ -228,8 +226,8 @@ def Grid_Search_CV_MLP(X_train, y_train, nb_crossval=3):
     ])
 
     parametres = {
-    'mlp__batch_size': (50,100),
-    'mlp__activation': ('relu','tanh'),        
+    'mlp__batch_size': (50, 100, 150),
+    'mlp__activation': ('relu','tanh','logistic'),        
     }
     
     gs_cv = GridSearchCV(pipeline_gscv, parametres, verbose=1, n_jobs=-1,  cv=nb_crossval)

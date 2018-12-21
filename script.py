@@ -19,6 +19,8 @@ import warnings
 warnings.filterwarnings("ignore")
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.pipeline import Pipeline
+from sklearn.neural_network import MLPClassifier
+
 
 
 
@@ -179,7 +181,7 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf = True):
 
     parametres = {
     'vector__max_df': (0.1, 0.2, 0.5, 0.7, 0.75, 0.8),
-    'vector__max_features' : (500, 1000, 1500, 2000),
+    'vector__max_features' : (1000, 1500, 2000),
     'clf__alpha': (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0)
     }
     
@@ -203,5 +205,49 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf = True):
     
     return best_parameters
 
-            
+
+def my_MLP(X_train, X_test, y_train, y_test, al = 0.0001, activ='relu',hdsizes= 100 ,verb = True, early_stop = True, bsize = 'auto'):
+    mlp = MLPClassifier(alpha = al, activation=activ,hidden_layer_sizes= hdsizes ,verbose = verb, early_stopping = early_stop, batch_size = bsize, random_state = 42)
+    mlp.fit(X_train,y_train)
+    y_pred = mlp.predict(X_test)
+    print('')
+    print("Précision/Score sur les données de Test : ")
+    score = mlp.score(X_test,y_test)
+    print(score)
+    print('')
+    print(classification_report(y_pred,y_test))
+    print('')
+    print(confusion_matrix(y_pred, y_test))
+    return [mlp, al, activ, hdsizes, early_stop, bsize, score]    
+
+
+def Grid_Search_CV_MLP(X_train, y_train, nb_crossval=3):    
+
+    pipeline_gscv = Pipeline([
+    ('mlp', MLPClassifier(random_state=42)),
+    ])
+
+    parametres = {
+    'mlp__batch_size': (50,100),
+    'mlp__activation': ('relu','tanh'),        
+    }
     
+    gs_cv = GridSearchCV(pipeline_gscv, parametres, verbose=1, n_jobs=-1,  cv=nb_crossval)
+
+    print("Grid Search MLP en cours...")
+    print("Pipeline à suivre :", [name for name, _ in pipeline_gscv.steps])
+    print("Paramètres à tester:")
+    pprint(parametres)
+    gs_cv.fit(X_train, y_train)
+    
+    print("Terminé !")
+    print('')
+
+    print("Meilleurs paramètres : ")
+    best_parameters = gs_cv.best_estimator_.get_params()
+    
+    for param_name in sorted(parametres.keys()):
+        print("\t%s: %r" % (param_name, best_parameters[param_name]))
+    print("\nMeilleur score: %0.3f" % gs_cv.best_score_)
+    
+    return best_parameters

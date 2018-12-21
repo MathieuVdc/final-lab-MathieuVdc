@@ -30,52 +30,8 @@ Nous disposons comme données d'un .csv avec l'image_path et le label associé p
 
 Ouvrons le .csv avec Pandas et vérifions si on a bien 3482 données et s'il ya bien 10 labels différents :
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>img_path</th>
-      <th>label</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>count</th>
-      <td>3482</td>
-      <td>3482</td>
-    </tr>
-    <tr>
-      <th>unique</th>
-      <td>3482</td>
-      <td>10</td>
-    </tr>
-    <tr>
-      <th>top</th>
-      <td>Scientific/10073624.jpg</td>
-      <td>Memo</td>
-    </tr>
-    <tr>
-      <th>freq</th>
-      <td>1</td>
-      <td>620</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+![png](img/resume.png)
 
 Il semble y avoir 3482 éléments également contenus dans les dossiers de textes obtenus par OCR donc on a pas de problèmes de cohérences de nombres de données entre le .csv et ces dernières.
 
@@ -86,82 +42,8 @@ Analysons la répartition des données avec quelques statistiques descriptives. 
 data.sample(10)
 ```
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+![png](img/repartition.png)
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>img_path</th>
-      <th>label</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>3013</th>
-      <td>Report/514120277.jpg</td>
-      <td>Report</td>
-    </tr>
-    <tr>
-      <th>614</th>
-      <td>Email/2085542332c.jpg</td>
-      <td>Email</td>
-    </tr>
-    <tr>
-      <th>642</th>
-      <td>Email/2085761260b.jpg</td>
-      <td>Email</td>
-    </tr>
-    <tr>
-      <th>3109</th>
-      <td>Resume/40005130-5131.jpg</td>
-      <td>Resume</td>
-    </tr>
-    <tr>
-      <th>590</th>
-      <td>Email/2085134821a.jpg</td>
-      <td>Email</td>
-    </tr>
-    <tr>
-      <th>2881</th>
-      <td>Report/502339200+-9201.jpg</td>
-      <td>Report</td>
-    </tr>
-    <tr>
-      <th>722</th>
-      <td>Email/527862259+-2259.jpg</td>
-      <td>Email</td>
-    </tr>
-    <tr>
-      <th>2909</th>
-      <td>Report/504330344_504330348.jpg</td>
-      <td>Report</td>
-    </tr>
-    <tr>
-      <th>2011</th>
-      <td>Memo/2024072051_2024072053.jpg</td>
-      <td>Memo</td>
-    </tr>
-    <tr>
-      <th>827</th>
-      <td>Email/81887335.jpg</td>
-      <td>Email</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 
 Il semble y avoir plus d'emails que d'autres types de documents dans notre jeu de données. On note aussi en relançant la commande que pas mal de lettres ou encore de memos sont présents. Avons-nous une sur-représentation d'une ou plusieurs classe(s) particulière(s) ?
 
@@ -204,16 +86,16 @@ Avant Tokenization, tous les textes sont récupérés et nettoyés de ponctuatio
 
 Note : Les 10 Labels ont été encodés avec LabelEncoder(). Voici les équivalents :
 
-0 : Advertisement
-1 : Email
-2 : Form
-3 : Letter
-4 : Memo
-5 : News
-6 : Note
-7 : Report
-8 : Resume
-9 : Scientific
+* 0 : Advertisement
+* 1 : Email
+* 2 : Form
+* 3 : Letter
+* 4 : Memo
+* 5 : News
+* 6 : Note
+* 7 : Report
+* 8 : Resume
+* 9 : Scientific
 
 ## 3.1 MultinomialNB - TF-IDF
 
@@ -268,7 +150,7 @@ Le résultat n'est pas très satisfaisant, la matrice de confusion est totalemen
 
 ### Optimisation des Hyper-paramètres :
 
-Optimisions l'entraînement en trouvant les meilleurs paramètres de tokenization et le meilleur alpha avec une GridSearchCV :
+Optimisons l'entraînement en trouvant les meilleurs paramètres de tokenization et le meilleur alpha avec une GridSearchCV :
 
     Meilleurs paramètres : 
     	clf__alpha: 0.2

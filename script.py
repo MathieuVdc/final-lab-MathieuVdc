@@ -183,15 +183,15 @@ def __tfidf(set_cv_to_fit, sets_cv_to_transform):
     return sets_tf
 
 
-def tokenizing_and_tfidf(
-    """
-        Concatène les deux opérations et crée
-        un BoW+TF-IDF.
-    """    
+def tokenizing_and_tfidf(  
         set_to_fit,
         sets_to_transform,
         max_feat=None,
         mdf=1.0):
+    """
+        Concatène les deux opérations et crée
+        un BoW+TF-IDF.
+    """  
 
     cv = tokenizing(set_to_fit, sets_to_transform, max_feat, mdf)
     nbr_sets = len(cv)
@@ -286,10 +286,7 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf=True):
     return best_parameters
 
 
-def my_MLP(
-    """
-        Entraîne un classifier MLP.
-    """    
+def my_MLP(   
         X_train,
         X_test,
         y_train,
@@ -300,6 +297,9 @@ def my_MLP(
         verb=True,
         early_stop=True,
         bsize='auto'):
+    """
+        Entraîne un classifier MLP.
+    """ 
     mlp = MLPClassifier(
         alpha=al,
         activation=activ,

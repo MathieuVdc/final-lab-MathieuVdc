@@ -57,7 +57,7 @@ def count_average_number_of_words_per_class(folder_path):
 
 def __get_text_cleaned(file_path):
     """
-       À partir d'un fichier txt en entré, retourne un texte des lignes 
+       À partir d'un fichier txt en entré, retourne un texte des lignes
        de ce dernier entièrement nettoyé dans une liste.
     """
     lines = open(file_path).readlines()
@@ -161,10 +161,10 @@ def tokenizing(set_to_fit, sets_to_transform, max_feat=None, mdf=1.0):
 
 def __tfidf(set_cv_to_fit, sets_cv_to_transform):
     """
-        Réalise la TF-IDF d'un Bag of Words. 
+        Réalise la TF-IDF d'un Bag of Words.
         set_cv_to_fit est un set de données
         utilisé pour la fonction fit et sets_cv_to_transforme
-        est une liste des sets qui se verront appliqués la fonction 
+        est une liste des sets qui se verront appliqués la fonction
         transform en dehors du set_cv_to_fit.
     """
     print("TFIDF...")
@@ -183,7 +183,7 @@ def __tfidf(set_cv_to_fit, sets_cv_to_transform):
     return sets_tf
 
 
-def tokenizing_and_tfidf(  
+def tokenizing_and_tfidf(
         set_to_fit,
         sets_to_transform,
         max_feat=None,
@@ -191,7 +191,7 @@ def tokenizing_and_tfidf(
     """
         Concatène les deux opérations et crée
         un BoW+TF-IDF.
-    """  
+    """
 
     cv = tokenizing(set_to_fit, sets_to_transform, max_feat, mdf)
     nbr_sets = len(cv)
@@ -286,7 +286,7 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf=True):
     return best_parameters
 
 
-def my_MLP(   
+def my_MLP(
         X_train,
         X_test,
         y_train,
@@ -299,7 +299,7 @@ def my_MLP(
         bsize='auto'):
     """
         Entraîne un classifier MLP.
-    """ 
+    """
     mlp = MLPClassifier(
         alpha=al,
         activation=activ,

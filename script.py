@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov  8 15:31:00 2018
+@author: Mathieu VANDECASTEELE
+"""
+
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV, PredefinedSplit
@@ -23,13 +30,17 @@ warnings.filterwarnings("ignore")
 
 
 def __count_words_in_a_file(file_path):
-
+    """
+        Compte le nombre de mots dans un fichier txt.
+    """
     file = open(file_path, "r", encoding="utf-8")
     return len(Counter(file.read().split()))
 
 
 def count_average_number_of_words_per_class(folder_path):
-
+    """
+        compte le nombre moyen de mots par classe.
+    """
     results = {}
     for directory in os.listdir(folder_path):
         list_number_words = []
@@ -45,6 +56,10 @@ def count_average_number_of_words_per_class(folder_path):
 
 
 def __get_text_cleaned(file_path):
+    """
+       À partir d'un fichier txt en entré, retourne un texte des lignes 
+       de ce dernier entièrement nettoyé dans une liste.
+    """
     lines = open(file_path).readlines()
     newlines = []
     table = str.maketrans('', '', string.punctuation + '’°“‘”—»«®©℠™')
@@ -58,7 +73,10 @@ def __get_text_cleaned(file_path):
 
 
 def __data_organizing(input_csv_path):
-
+    """
+        À partir du .csv, crée la paire principale X et y pour constituant
+        le set principal de données.
+    """
     raw_data = pd.read_csv(input_csv_path, sep=",")
     x = []
     y = []
@@ -78,7 +96,11 @@ def __data_organizing(input_csv_path):
 
 
 def __data_splitting(x, y):
-
+    """
+        Renvoie 4 jeux à partir d'un jeu de données principal.
+        x est un vecteur contenant des listes, chaque liste contient le texte
+        d'un document. y est les labels.
+    """
     X_train, X_test, y_train, y_test = train_test_split(
         x, y, test_size=0.4, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(
@@ -102,14 +124,21 @@ def __data_splitting(x, y):
 
 
 def organize_and_split_data(input_csv_path):
-
+    """
+        Concatène les deux opérations précédentes.
+    """
     listXy = __data_organizing(input_csv_path)
     datasets = __data_splitting(listXy[0], listXy[1])
     return datasets
 
 
 def tokenizing(set_to_fit, sets_to_transform, max_feat=None, mdf=1.0):
-
+    """
+        Réalise un Bag of Words. set_to_fit est un set de données
+        utilisé pour la fonction fit et sets_to_transforme est une liste
+        des sets qui se verront appliqués la fonction transform en dehors
+        du set_to_fit.
+    """
     print("Tokenization...")
     vectorizer = CountVectorizer(max_features=max_feat, max_df=mdf)
     vectorizer.fit(set_to_fit)
@@ -131,7 +160,13 @@ def tokenizing(set_to_fit, sets_to_transform, max_feat=None, mdf=1.0):
 
 
 def __tfidf(set_cv_to_fit, sets_cv_to_transform):
-
+    """
+        Réalise la TF-IDF d'un Bag of Words. 
+        set_cv_to_fit est un set de données
+        utilisé pour la fonction fit et sets_cv_to_transforme
+        est une liste des sets qui se verront appliqués la fonction 
+        transform en dehors du set_cv_to_fit.
+    """
     print("TFIDF...")
     tf_transformer = TfidfTransformer().fit(set_cv_to_fit)
     sets_tf = []
@@ -149,6 +184,10 @@ def __tfidf(set_cv_to_fit, sets_cv_to_transform):
 
 
 def tokenizing_and_tfidf(
+    """
+        Concatène les deux opérations et crée
+        un BoW+TF-IDF.
+    """    
         set_to_fit,
         sets_to_transform,
         max_feat=None,
@@ -163,7 +202,9 @@ def tokenizing_and_tfidf(
 
 
 def my_MultinomialNB(X_train, X_test, y_train, y_test, a=1.0, cross_val=5):
-
+    """
+        Entraîne un classifier MultinomialNB.
+    """
     clf = MultinomialNB(alpha=a)
     print("Entraînement...")
     clf.fit(X_train, y_train)
@@ -196,7 +237,10 @@ def my_MultinomialNB(X_train, X_test, y_train, y_test, a=1.0, cross_val=5):
 
 
 def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf=True):
-
+    """
+        Performe une GridSearchCV pour un classifier
+        MultinomialNB.
+    """
     if (tfidf):
         pipeline_gscv = Pipeline([
             ('vector', CountVectorizer()),
@@ -243,6 +287,9 @@ def Grid_Search_CV_MultinomialNB(X_train, y_train, nb_crossval=3, tfidf=True):
 
 
 def my_MLP(
+    """
+        Entraîne un classifier MLP.
+    """    
         X_train,
         X_test,
         y_train,
@@ -275,7 +322,10 @@ def my_MLP(
 
 
 def Grid_Search_CV_MLP(X_train, y_train, nb_crossval=3):
-
+    """
+        Performe une GridSearchCV pour un classifier
+        MLP.
+    """
     pipeline_gscv = Pipeline([
         ('mlp', MLPClassifier(random_state=42)),
     ])
